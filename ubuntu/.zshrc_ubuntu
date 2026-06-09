@@ -1,0 +1,22 @@
+# Ubuntu specific zsh configurations
+# 1. 터미널 백스페이스 처리
+#stty erase "^?"
+
+# 2. D-Bus 및 GNOME Keyring 설정
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+    eval $(dbus-launch --sh-syntax)
+fi
+
+# 3. Alias (별칭) 설정
+alias kakao='WINEPREFIX=~/.kakaotalk LANG="ko_KR.UTF-8" wine'
+alias winbox4='winbox4.winbox'
+
+clip-img() {
+  local img="/tmp/codex-clip.png"
+  xclip -selection clipboard -t image/png -o > "$img" && codex -i "$img" "$@"
+}
+
+# kitty (IBus for Linux)
+export GTK_IM_MODULE=ibus
+export QT_IM_MODULE=ibus
+export XMODIFIERS=@im=ibus

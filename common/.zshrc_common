@@ -136,21 +136,12 @@ source $ZSH/oh-my-zsh.sh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-
-# 1. 터미널 백스페이스 처리 (Zsh은 기본적으로 잘 작동하지만 명시해두어도 무방합니다)
-#stty erase '^?'
-
-# 2. D-Bus 및 GNOME Keyring 설정
-# Bash 문법과 동일하게 작동합니다.
-if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
-    eval $(dbus-launch --sh-syntax)
+# Load OS-specific zshrc if it exists
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    [ -f ~/.zshrc_macos ] && source ~/.zshrc_macos
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    [ -f ~/.zshrc_ubuntu ] && source ~/.zshrc_ubuntu
 fi
-
-#if [ -z "$GNOME_KEYRING_CONTROL" ]; then
-#    eval $(gnome-keyring-daemon --start --components=secrets)
-#    export GNOME_KEYRING_CONTROL
-#    export GNOME_KEYRING_PID
-#fi
 
 # 3. Alias (별칭) 설정
 alias code='code --password-store="basic"'
@@ -160,16 +151,9 @@ alias ll='eza -lha --icons --git'
 alias la='eza -a --icons'
 alias lt='eza --tree --icons'
 alias dropbox="~/bin/dropbox.py"
-alias kakao='WINEPREFIX=~/.kakaotalk LANG="ko_KR.UTF-8" wine'
 # alias geminis='gemini --sandbox'
 # alias geminin='gemini --policy native'
 alias codexd='codex --sandbox danger-full-access --ask-for-approval on-request'
-alias winbox4='winbox4.winbox'
-
-clip-img() {
-  local img="/tmp/codex-clip.png"
-  xclip -selection clipboard -t image/png -o > "$img" && codex -i "$img" "$@"
-}
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
@@ -182,11 +166,6 @@ export PATH="$PATH:$HOME/.dotnet/tools"
 
 #export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
-
-# kitty
-export GTK_IM_MODULE=ibus
-export QT_IM_MODULE=ibus
-export XMODIFIERS=@im=ibus
 
 # gemini cli - vertex api
 export GOOGLE_CLOUD_PROJECT=vibecoding-project-2026
