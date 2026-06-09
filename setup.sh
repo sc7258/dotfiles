@@ -62,7 +62,6 @@ echo "🔗 공통 설정 파일들의 심볼릭 링크를 생성합니다..."
 link_file "$COMMON_DIR/.zshrc_common" "$HOME/.zshrc"
 link_file "$COMMON_DIR/.bashrc" "$HOME/.bashrc"
 link_file "$COMMON_DIR/.gitconfig" "$HOME/.gitconfig"
-link_file "$COMMON_DIR/.tmux.conf" "$HOME/.tmux.conf"
 
 # zsh를 기본 셸로 설정 (선택적)
 if [[ "$SHELL" != *"zsh"* ]]; then

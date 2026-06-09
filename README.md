@@ -9,8 +9,7 @@
   - `.zshrc` : Zsh 셸 설정 파일
   - `.bashrc` : Bash 셸 설정 파일
   - `.gitconfig` : Git 사용자 및 alias 설정
-  - `.tmux.conf` : Tmux 멀티플렉서 설정 파일
-- `apt-packages.txt` : 현재 시스템에 수동으로 설치되었던 APT 패키지 목록 (약 120+개)
+- `ubuntu/apt-packages.txt` : 현재 시스템에 수동으로 설치되었던 APT 패키지 목록 (약 120+개)
 - `setup.sh` : 자동 설치 및 심볼릭 링크 생성 스크립트
 
 ## 🚀 사용 방법 (새로운 컴퓨터에서)
