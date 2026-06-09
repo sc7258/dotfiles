@@ -38,6 +38,21 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "⚠️ apt-packages.txt 파일을 찾을 수 없어 패키지 설치를 건너뜁니다."
     fi
 
+    echo "📦 snap-packages.txt 로부터 snap 패키지를 설치합니다..."
+    if command -v snap &> /dev/null && [ -f "$UBUNTU_DIR/snap-packages.txt" ]; then
+        while read -r package flag; do
+            if [ -n "$package" ]; then
+                if [ "$flag" == "--classic" ]; then
+                    sudo snap install "$package" --classic
+                else
+                    sudo snap install "$package"
+                fi
+            fi
+        done < "$UBUNTU_DIR/snap-packages.txt"
+    else
+        echo "⚠️ snap이 설치되어 있지 않거나 snap-packages.txt 파일을 찾을 수 없습니다."
+    fi
+
     # Ubuntu 전용 설정 파일 링크
     link_file "$UBUNTU_DIR/.zshrc_ubuntu" "$HOME/.zshrc_ubuntu"
 

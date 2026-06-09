@@ -1,0 +1,6 @@
+brave
+dbeaver-ce --classic
+firefox
+kontena-lens --classic
+p3x-onenote
+winbox4
