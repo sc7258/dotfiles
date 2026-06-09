@@ -8,7 +8,6 @@ if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
 fi
 
 # 3. Alias (별칭) 설정
-alias kakao='WINEPREFIX=~/.kakaotalk LANG="ko_KR.UTF-8" wine'
 alias winbox4='winbox4.winbox'
 
 clip-img() {
