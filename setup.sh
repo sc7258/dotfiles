@@ -63,6 +63,10 @@ link_file "$COMMON_DIR/.zshrc_common" "$HOME/.zshrc"
 link_file "$COMMON_DIR/.bashrc" "$HOME/.bashrc"
 link_file "$COMMON_DIR/.gitconfig" "$HOME/.gitconfig"
 
+# kitty 설정 링크 (디렉토리 자체를 링크하거나 내부 파일을 링크)
+mkdir -p "$HOME/.config/kitty"
+link_file "$COMMON_DIR/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
+
 # zsh를 기본 셸로 설정 (선택적)
 if [[ "$SHELL" != *"zsh"* ]]; then
     echo "🛠 기본 셸을 zsh로 변경합니다..."
