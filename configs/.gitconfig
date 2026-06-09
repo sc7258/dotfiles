@@ -1,0 +1,7 @@
+[credential]
+	helper = store
+[user]
+	name = sungchul.chin
+	email = sungchul.shin@intelliantech.com
+[core]
+	editor = nano
