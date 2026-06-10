@@ -63,6 +63,11 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # Ubuntu 전용 설정 파일 링크
     link_file "$UBUNTU_DIR/.zshrc_ubuntu" "$HOME/.zshrc_ubuntu"
 
+    # GNOME 및 입력기 단축키 설정 적용
+    if [ -f "$UBUNTU_DIR/set_gnome_settings.sh" ]; then
+        "$UBUNTU_DIR/set_gnome_settings.sh"
+    fi
+
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "🍎 macOS 환경을 감지했습니다."
     
@@ -83,6 +88,7 @@ fi
 echo "🔗 공통 설정 파일들의 심볼릭 링크를 생성합니다..."
 link_file "$COMMON_DIR/.zshrc_common" "$HOME/.zshrc"
 link_file "$COMMON_DIR/.bashrc" "$HOME/.bashrc"
+link_file "$COMMON_DIR/.p10k.zsh" "$HOME/.p10k.zsh"
 link_file "$COMMON_DIR/.gitconfig" "$HOME/.gitconfig"
 
 # kitty 설정 링크 (디렉토리 자체를 링크하거나 내부 파일을 링크)
@@ -106,6 +112,11 @@ fi
 if [[ "$SHELL" != *"zsh"* ]]; then
     echo "🛠 기본 셸을 zsh로 변경합니다..."
     chsh -s "$(which zsh)"
+fi
+
+# Zsh 플러그인 및 테마 설치
+if [ -f "$COMMON_DIR/install_zsh_plugins.sh" ]; then
+    "$COMMON_DIR/install_zsh_plugins.sh"
 fi
 
 echo "✅ 모든 설정이 완료되었습니다! 터미널을 재시작하거나 새 세션을 열어주세요."
