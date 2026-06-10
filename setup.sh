@@ -82,6 +82,19 @@ link_file "$COMMON_DIR/.gitconfig" "$HOME/.gitconfig"
 mkdir -p "$HOME/.config/kitty"
 link_file "$COMMON_DIR/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
 
+# 3. 폰트 설치
+echo "🔤 사용자 폰트를 설치합니다..."
+mkdir -p "$HOME/.local/share/fonts"
+if [ -d "$COMMON_DIR/fonts" ] && [ "$(ls -A "$COMMON_DIR/fonts")" ]; then
+    cp -r "$COMMON_DIR/fonts/"* "$HOME/.local/share/fonts/"
+    if command -v fc-cache &> /dev/null; then
+        echo "   -> 폰트 캐시를 갱신합니다..."
+        fc-cache -f -v > /dev/null
+    fi
+else
+    echo "   -> 백업된 폰트가 없습니다."
+fi
+
 # zsh를 기본 셸로 설정 (선택적)
 if [[ "$SHELL" != *"zsh"* ]]; then
     echo "🛠 기본 셸을 zsh로 변경합니다..."
