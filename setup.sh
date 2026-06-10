@@ -11,12 +11,15 @@ UBUNTU_DIR="$DOTFILES_DIR/ubuntu"
 MACOS_DIR="$DOTFILES_DIR/macos"
 
 ZSH_ONLY=false
+CONFIG_ONLY=false
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --zsh-only) ZSH_ONLY=true ;;
+        --config-only) CONFIG_ONLY=true ;;
         -h|--help) 
-            echo "사용법: $0 [--zsh-only]"
-            echo "  --zsh-only : 패키지 설치를 건너뛰고 Zsh 관련 설정만 다시 적용합니다."
+            echo "사용법: $0 [--zsh-only | --config-only]"
+            echo "  --zsh-only    : 패키지 설치 및 GNOME/입력기 설정을 건너뛰고 터미널(Zsh, Kitty) 관련 설정만 적용합니다."
+            echo "  --config-only : 패키지 설치(apt, snap 등 다운로드)만 건너뛰고, 모든 시스템 설정(입력기, GNOME, 폰트, 심볼릭 링크)을 적용합니다."
             exit 0 
             ;;
         *) echo "알 수 없는 옵션: $1"; exit 1 ;;
@@ -26,7 +29,9 @@ done
 
 echo "🚀 새로운 시스템 구성을 시작합니다..."
 if [ "$ZSH_ONLY" = true ]; then
-    echo "⚡ [--zsh-only] 모드 활성화: 패키지 설치를 생략하고 Zsh 설정만 진행합니다."
+    echo "⚡ [--zsh-only] 모드 활성화: 터미널/Zsh 설정만 진행합니다."
+elif [ "$CONFIG_ONLY" = true ]; then
+    echo "⚡ [--config-only] 모드 활성화: 패키지 다운로드를 생략하고 시스템 설정 및 링크만 적용합니다."
 fi
 
 # 링크 생성 도우미 함수 (기존 파일이 있으면 백업)
@@ -57,7 +62,7 @@ link_file() {
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "🐧 Ubuntu(Linux) 환경을 감지했습니다."
     
-    if [ "$ZSH_ONLY" = false ]; then
+    if [ "$ZSH_ONLY" = false ] && [ "$CONFIG_ONLY" = false ]; then
         echo "📦 외부 패키지용 APT 저장소를 추가합니다..."
         if [ -f "$UBUNTU_DIR/add_apt_repos.sh" ]; then
             "$UBUNTU_DIR/add_apt_repos.sh"
@@ -95,7 +100,10 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         else
             echo "⚠️ snap이 설치되어 있지 않거나 snap-packages.txt 파일을 찾을 수 없습니다."
         fi
+    fi
 
+    if [ "$ZSH_ONLY" = false ]; then
+        # ZSH_ONLY가 아닐 때(즉, CONFIG_ONLY거나 전체 설치일 때) 입력기/GNOME 설정 적용
         link_file "$UBUNTU_DIR/.xinputrc" "$HOME/.xinputrc"
 
         # GNOME 및 입력기 단축키 설정 적용
