@@ -23,8 +23,11 @@ link_file() {
         return
     fi
 
-    # 2. 파일이 존재하거나 잘못된 링크라면 백업 후 삭제
-    if [ -e "$dest" ] || [ -L "$dest" ]; then
+    # 2. 파일이 존재하거나 잘못된 링크라면 처리
+    if [ -L "$dest" ] && [ ! -e "$dest" ]; then
+        echo "   -> 깨진 링크 삭제: $dest"
+        rm -f "$dest"
+    elif [ -e "$dest" ] || [ -L "$dest" ]; then
         echo "   -> 백업 생성: $dest -> ${dest}.backup"
         mv "$dest" "${dest}.backup"
     fi
@@ -37,12 +40,22 @@ link_file() {
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "🐧 Ubuntu(Linux) 환경을 감지했습니다."
     
+    echo "📦 외부 패키지용 APT 저장소를 추가합니다..."
+    if [ -f "$UBUNTU_DIR/add_apt_repos.sh" ]; then
+        "$UBUNTU_DIR/add_apt_repos.sh"
+    fi
+
     echo "📦 apt-packages.txt 로부터 패키지를 설치합니다..."
     if [ -f "$UBUNTU_DIR/apt-packages.txt" ]; then
         sudo apt update
         xargs -a "$UBUNTU_DIR/apt-packages.txt" sudo apt install -y
     else
         echo "⚠️ apt-packages.txt 파일을 찾을 수 없어 패키지 설치를 건너뜁니다."
+    fi
+
+    echo "📦 수동 DEB 패키지를 설치합니다..."
+    if [ -f "$UBUNTU_DIR/install_deb_packages.sh" ]; then
+        "$UBUNTU_DIR/install_deb_packages.sh"
     fi
 
     echo "📦 snap-packages.txt 로부터 snap 패키지를 설치합니다..."
@@ -62,6 +75,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
     # Ubuntu 전용 설정 파일 링크
     link_file "$UBUNTU_DIR/.zshrc_ubuntu" "$HOME/.zshrc_ubuntu"
+    link_file "$UBUNTU_DIR/.xinputrc" "$HOME/.xinputrc"
 
     # GNOME 및 입력기 단축키 설정 적용
     if [ -f "$UBUNTU_DIR/set_gnome_settings.sh" ]; then
@@ -91,9 +105,15 @@ link_file "$COMMON_DIR/.bashrc" "$HOME/.bashrc"
 link_file "$COMMON_DIR/.p10k.zsh" "$HOME/.p10k.zsh"
 link_file "$COMMON_DIR/.gitconfig" "$HOME/.gitconfig"
 
-# kitty 설정 링크 (디렉토리 자체를 링크하거나 내부 파일을 링크)
+# kitty 설정 링크 (디렉토리 내부의 모든 파일을 링크하여 테마 등도 지원)
 mkdir -p "$HOME/.config/kitty"
-link_file "$COMMON_DIR/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
+if [ -d "$COMMON_DIR/kitty" ]; then
+    for f in "$COMMON_DIR/kitty"/*; do
+        if [ -f "$f" ]; then
+            link_file "$f" "$HOME/.config/kitty/$(basename "$f")"
+        fi
+    done
+fi
 
 # 3. 폰트 설치
 echo "🔤 사용자 폰트를 설치합니다..."

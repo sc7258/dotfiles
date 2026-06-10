@@ -1,5 +1,3 @@
-brave
-dbeaver-ce --classic
 firefox
 kontena-lens --classic
 winbox4

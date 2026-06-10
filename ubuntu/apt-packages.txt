@@ -1,6 +1,7 @@
 apt-transport-https
 barrier
 blueman
+brave-browser
 bsdutils
 build-essential
 ca-certificates
@@ -8,6 +9,7 @@ code
 containerd.io
 curl
 dash
+dbeaver-ce
 dbus-x11
 dconf-editor
 diffutils
@@ -22,12 +24,6 @@ dotnet-sdk-8.0
 duck
 efibootmgr
 eza
-fcitx5
-fcitx5-frontend-gtk2
-fcitx5-frontend-gtk3
-fcitx5-frontend-qt5
-fcitx5-frontend-qt6
-fcitx5-hangul
 findutils
 flameshot
 flatpak
@@ -53,9 +49,9 @@ hunspell-en-gb
 hunspell-en-za
 hunspell-ko
 ibus-hangul
-ibus-table-cangjie-big
 ibus-table-cangjie3
 ibus-table-cangjie5
+ibus-table-cangjie-big
 init
 kitty
 kubeadm
@@ -73,11 +69,11 @@ libfuse2t64
 libgnutls30t64:i386
 libm17n-0
 libmarisa0
-libopencc-data
 libopencc1.1
+libopencc-data
 libotf1
-libpinyin-data
 libpinyin15
+libpinyin-data
 libpq-dev
 libsecret-1-0
 linux-firmware
@@ -88,7 +84,6 @@ m17n-db
 ncurses-base
 ncurses-bin
 net-tools
-obsidian
 pipx
 python3
 python3-dev
@@ -97,8 +92,6 @@ python3-tk
 rclone
 s3cmd
 shim-signed
-synology-drive
-tabby-terminal
 tableplus
 tilix
 tree
@@ -110,10 +103,6 @@ ubuntu-wallpapers
 unzip
 wbritish
 winbind
-wine32:i386
-wine64
-winehq-stable
-winetricks
 xclip
 zip
 zsh
