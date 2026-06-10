@@ -17,6 +17,13 @@ link_file() {
     local src=$1
     local dest=$2
 
+    # 1. 대상이 심볼릭 링크이고, 이미 올바른 소스를 가리키고 있다면 스킵
+    if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+        echo "   -> 이미 링크되어 있습니다: $dest -> $src"
+        return
+    fi
+
+    # 2. 파일이 존재하거나 잘못된 링크라면 백업 후 삭제
     if [ -e "$dest" ] || [ -L "$dest" ]; then
         echo "   -> 백업 생성: $dest -> ${dest}.backup"
         mv "$dest" "${dest}.backup"
