@@ -143,19 +143,19 @@ if [ "$ZSH_ONLY" = false ]; then
             fi
         done
     fi
+fi
 
-    # 3. 폰트 설치
-    echo "🔤 사용자 폰트를 설치합니다..."
-    mkdir -p "$HOME/.local/share/fonts"
-    if [ -d "$COMMON_DIR/fonts" ] && [ "$(ls -A "$COMMON_DIR/fonts")" ]; then
-        cp -r "$COMMON_DIR/fonts/"* "$HOME/.local/share/fonts/"
-        if command -v fc-cache &> /dev/null; then
-            echo "   -> 폰트 캐시를 갱신합니다..."
-            fc-cache -f -v > /dev/null
-        fi
-    else
-        echo "   -> 백업된 폰트가 없습니다."
+# 3. 폰트 설치 (Zsh/터미널 테마에 필수적이므로 --zsh-only 모드에서도 실행)
+echo "🔤 사용자 폰트를 설치합니다..."
+mkdir -p "$HOME/.local/share/fonts"
+if [ -d "$COMMON_DIR/fonts" ] && [ "$(ls -A "$COMMON_DIR/fonts")" ]; then
+    cp -r "$COMMON_DIR/fonts/"* "$HOME/.local/share/fonts/"
+    if command -v fc-cache &> /dev/null; then
+        echo "   -> 폰트 캐시를 갱신합니다..."
+        fc-cache -f -v > /dev/null
     fi
+else
+    echo "   -> 백업된 폰트가 없습니다."
 fi
 
 # zsh를 기본 셸로 설정 (선택적)
