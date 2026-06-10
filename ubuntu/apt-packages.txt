@@ -35,6 +35,7 @@ gnome-shell-extension-manager
 gnome-user-docs-ko
 gnupg
 google-chrome-stable
+google-chrome-stable
 google-cloud-cli
 gpg
 grep

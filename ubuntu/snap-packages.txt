@@ -1,3 +1,2 @@
 firefox
-kontena-lens --classic
 winbox4
