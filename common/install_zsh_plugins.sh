@@ -47,4 +47,22 @@ else
     echo "   -> zsh-syntax-highlighting이 이미 설치되어 있습니다."
 fi
 
-echo "✅ Zsh 플러그인 설치가 완료되었습니다."
+# 5. NVM (Node Version Manager) 및 Node.js (LTS) 설치
+if [ ! -d "$HOME/.nvm" ]; then
+    echo "   -> NVM (Node Version Manager)을 설치합니다..."
+    # 최신 버전 스크립트 실행
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh | bash
+    
+    # 설치 직후 현재 세션에서 NVM을 사용하기 위한 환경 변수 로드
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    
+    echo "   -> Node.js 최신 LTS 버전을 설치합니다..."
+    nvm install --lts
+    nvm use --lts
+    nvm alias default 'lts/*'
+else
+    echo "   -> NVM이 이미 설치되어 있습니다."
+fi
+
+echo "✅ Zsh 플러그인 및 개발 환경(NVM) 설치가 완료되었습니다."
