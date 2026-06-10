@@ -12,14 +12,17 @@ MACOS_DIR="$DOTFILES_DIR/macos"
 
 ZSH_ONLY=false
 CONFIG_ONLY=false
+PACKAGES_ONLY=false
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --zsh-only) ZSH_ONLY=true ;;
         --config-only) CONFIG_ONLY=true ;;
+        --packages-only) PACKAGES_ONLY=true ;;
         -h|--help) 
-            echo "사용법: $0 [--zsh-only | --config-only]"
-            echo "  --zsh-only    : 패키지 설치 및 GNOME/입력기 설정을 건너뛰고 터미널(Zsh, Kitty) 관련 설정만 적용합니다."
-            echo "  --config-only : 패키지 설치(apt, snap 등 다운로드)만 건너뛰고, 모든 시스템 설정(입력기, GNOME, 폰트, 심볼릭 링크)을 적용합니다."
+            echo "사용법: $0 [--zsh-only | --config-only | --packages-only]"
+            echo "  --zsh-only      : 패키지 설치 및 GNOME/입력기 설정을 건너뛰고 터미널(Zsh, Kitty) 관련 설정만 적용합니다."
+            echo "  --config-only   : 패키지 설치(apt, snap 등 다운로드)만 건너뛰고, 모든 시스템 설정(입력기, GNOME, 폰트, 심볼릭 링크)을 적용합니다."
+            echo "  --packages-only : 시스템 설정(심볼릭 링크, 폰트 등)을 건너뛰고 누락된 패키지(apt, snap, deb)만 설치합니다."
             exit 0 
             ;;
         *) echo "알 수 없는 옵션: $1"; exit 1 ;;
@@ -32,6 +35,8 @@ if [ "$ZSH_ONLY" = true ]; then
     echo "⚡ [--zsh-only] 모드 활성화: 터미널/Zsh 설정만 진행합니다."
 elif [ "$CONFIG_ONLY" = true ]; then
     echo "⚡ [--config-only] 모드 활성화: 패키지 다운로드를 생략하고 시스템 설정 및 링크만 적용합니다."
+elif [ "$PACKAGES_ONLY" = true ]; then
+    echo "⚡ [--packages-only] 모드 활성화: 설정 및 링크 작업을 생략하고 패키지 설치만 진행합니다."
 fi
 
 # 링크 생성 도우미 함수 (기존 파일이 있으면 백업)
@@ -102,8 +107,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         fi
     fi
 
-    if [ "$ZSH_ONLY" = false ]; then
-        # ZSH_ONLY가 아닐 때(즉, CONFIG_ONLY거나 전체 설치일 때) 입력기/GNOME 설정 적용
+    if [ "$ZSH_ONLY" = false ] && [ "$PACKAGES_ONLY" = false ]; then
+        # ZSH_ONLY나 PACKAGES_ONLY가 아닐 때(즉, CONFIG_ONLY거나 전체 설치일 때) 입력기/GNOME 설정 적용
         link_file "$UBUNTU_DIR/.xinputrc" "$HOME/.xinputrc"
 
         # GNOME 및 입력기 단축키 설정 적용
@@ -113,12 +118,14 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     fi
 
     # Ubuntu 전용 설정 파일 링크 (Zsh 관련)
-    link_file "$UBUNTU_DIR/.zshrc_ubuntu" "$HOME/.zshrc_ubuntu"
+    if [ "$PACKAGES_ONLY" = false ]; then
+        link_file "$UBUNTU_DIR/.zshrc_ubuntu" "$HOME/.zshrc_ubuntu"
+    fi
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "🍎 macOS 환경을 감지했습니다."
     
-    if [ "$ZSH_ONLY" = false ]; then
+    if [ "$ZSH_ONLY" = false ] && [ "$CONFIG_ONLY" = false ]; then
         # Homebrew 설치 확인 및 패키지 설치 (Brewfile 활용 가능)
         if ! command -v brew &> /dev/null; then
             echo "🍺 Homebrew가 설치되어 있지 않습니다. Homebrew를 먼저 설치해주세요."
@@ -128,53 +135,57 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 
     # macOS 전용 설정 파일 링크 (Zsh 관련)
-    link_file "$MACOS_DIR/.zshrc_macos" "$HOME/.zshrc_macos"
+    if [ "$PACKAGES_ONLY" = false ]; then
+        link_file "$MACOS_DIR/.zshrc_macos" "$HOME/.zshrc_macos"
+    fi
 else
     echo "❓ 지원하지 않는 OS입니다: $OSTYPE"
 fi
 
-# 2. 공통 심볼릭 링크 생성
-echo "🔗 공통 설정 파일들의 심볼릭 링크를 생성합니다..."
-link_file "$COMMON_DIR/.zshrc_common" "$HOME/.zshrc"
-link_file "$COMMON_DIR/.p10k.zsh" "$HOME/.p10k.zsh"
+if [ "$PACKAGES_ONLY" = false ]; then
+    # 2. 공통 심볼릭 링크 생성
+    echo "🔗 공통 설정 파일들의 심볼릭 링크를 생성합니다..."
+    link_file "$COMMON_DIR/.zshrc_common" "$HOME/.zshrc"
+    link_file "$COMMON_DIR/.p10k.zsh" "$HOME/.p10k.zsh"
 
-if [ "$ZSH_ONLY" = false ]; then
-    link_file "$COMMON_DIR/.bashrc" "$HOME/.bashrc"
-    link_file "$COMMON_DIR/.gitconfig" "$HOME/.gitconfig"
+    if [ "$ZSH_ONLY" = false ]; then
+        link_file "$COMMON_DIR/.bashrc" "$HOME/.bashrc"
+        link_file "$COMMON_DIR/.gitconfig" "$HOME/.gitconfig"
 
-    # kitty 설정 링크 (디렉토리 내부의 모든 파일을 링크하여 테마 등도 지원)
-    mkdir -p "$HOME/.config/kitty"
-    if [ -d "$COMMON_DIR/kitty" ]; then
-        for f in "$COMMON_DIR/kitty"/*; do
-            if [ -f "$f" ]; then
-                link_file "$f" "$HOME/.config/kitty/$(basename "$f")"
-            fi
-        done
+        # kitty 설정 링크 (디렉토리 내부의 모든 파일을 링크하여 테마 등도 지원)
+        mkdir -p "$HOME/.config/kitty"
+        if [ -d "$COMMON_DIR/kitty" ]; then
+            for f in "$COMMON_DIR/kitty"/*; do
+                if [ -f "$f" ]; then
+                    link_file "$f" "$HOME/.config/kitty/$(basename "$f")"
+                fi
+            done
+        fi
     fi
-fi
 
-# 3. 폰트 설치 (Zsh/터미널 테마에 필수적이므로 --zsh-only 모드에서도 실행)
-echo "🔤 사용자 폰트를 설치합니다..."
-mkdir -p "$HOME/.local/share/fonts"
-if [ -d "$COMMON_DIR/fonts" ] && [ "$(ls -A "$COMMON_DIR/fonts")" ]; then
-    cp -r "$COMMON_DIR/fonts/"* "$HOME/.local/share/fonts/"
-    if command -v fc-cache &> /dev/null; then
-        echo "   -> 폰트 캐시를 갱신합니다..."
-        fc-cache -f -v > /dev/null
+    # 3. 폰트 설치 (Zsh/터미널 테마에 필수적이므로 --zsh-only 모드에서도 실행)
+    echo "🔤 사용자 폰트를 설치합니다..."
+    mkdir -p "$HOME/.local/share/fonts"
+    if [ -d "$COMMON_DIR/fonts" ] && [ "$(ls -A "$COMMON_DIR/fonts")" ]; then
+        cp -r "$COMMON_DIR/fonts/"* "$HOME/.local/share/fonts/"
+        if command -v fc-cache &> /dev/null; then
+            echo "   -> 폰트 캐시를 갱신합니다..."
+            fc-cache -f -v > /dev/null
+        fi
+    else
+        echo "   -> 백업된 폰트가 없습니다."
     fi
-else
-    echo "   -> 백업된 폰트가 없습니다."
-fi
 
-# zsh를 기본 셸로 설정 (선택적)
-if [[ "$SHELL" != *"zsh"* ]]; then
-    echo "🛠 기본 셸을 zsh로 변경합니다..."
-    chsh -s "$(which zsh)"
-fi
+    # zsh를 기본 셸로 설정 (선택적)
+    if [[ "$SHELL" != *"zsh"* ]]; then
+        echo "🛠 기본 셸을 zsh로 변경합니다..."
+        chsh -s "$(which zsh)"
+    fi
 
-# Zsh 플러그인 및 테마 설치
-if [ -f "$COMMON_DIR/install_zsh_plugins.sh" ]; then
-    "$COMMON_DIR/install_zsh_plugins.sh"
+    # Zsh 플러그인 및 테마 설치
+    if [ -f "$COMMON_DIR/install_zsh_plugins.sh" ]; then
+        "$COMMON_DIR/install_zsh_plugins.sh"
+    fi
 fi
 
 echo "✅ 모든 설정이 완료되었습니다! 터미널을 재시작하거나 새 세션을 열어주세요."
