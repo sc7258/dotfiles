@@ -10,7 +10,24 @@ COMMON_DIR="$DOTFILES_DIR/common"
 UBUNTU_DIR="$DOTFILES_DIR/ubuntu"
 MACOS_DIR="$DOTFILES_DIR/macos"
 
+ZSH_ONLY=false
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --zsh-only) ZSH_ONLY=true ;;
+        -h|--help) 
+            echo "사용법: $0 [--zsh-only]"
+            echo "  --zsh-only : 패키지 설치를 건너뛰고 Zsh 관련 설정만 다시 적용합니다."
+            exit 0 
+            ;;
+        *) echo "알 수 없는 옵션: $1"; exit 1 ;;
+    esac
+    shift
+done
+
 echo "🚀 새로운 시스템 구성을 시작합니다..."
+if [ "$ZSH_ONLY" = true ]; then
+    echo "⚡ [--zsh-only] 모드 활성화: 패키지 설치를 생략하고 Zsh 설정만 진행합니다."
+fi
 
 # 링크 생성 도우미 함수 (기존 파일이 있으면 백업)
 link_file() {
@@ -40,64 +57,69 @@ link_file() {
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "🐧 Ubuntu(Linux) 환경을 감지했습니다."
     
-    echo "📦 외부 패키지용 APT 저장소를 추가합니다..."
-    if [ -f "$UBUNTU_DIR/add_apt_repos.sh" ]; then
-        "$UBUNTU_DIR/add_apt_repos.sh"
-    fi
+    if [ "$ZSH_ONLY" = false ]; then
+        echo "📦 외부 패키지용 APT 저장소를 추가합니다..."
+        if [ -f "$UBUNTU_DIR/add_apt_repos.sh" ]; then
+            "$UBUNTU_DIR/add_apt_repos.sh"
+        fi
 
-    echo "📦 apt-packages.txt 로부터 패키지를 설치합니다..."
-    if [ -f "$UBUNTU_DIR/apt-packages.txt" ]; then
-        sudo apt update
-        while read -r package; do
-            if [ -n "$package" ]; then
-                echo "   -> 설치 시도: $package"
-                sudo apt install -y "$package" || echo "   ❌ 설치 실패: $package (계속 진행합니다)"
-            fi
-        done < "$UBUNTU_DIR/apt-packages.txt"
-    else
-        echo "⚠️ apt-packages.txt 파일을 찾을 수 없어 패키지 설치를 건너뜁니다."
-    fi
-
-    echo "📦 수동 DEB 패키지를 설치합니다..."
-    if [ -f "$UBUNTU_DIR/install_deb_packages.sh" ]; then
-        "$UBUNTU_DIR/install_deb_packages.sh"
-    fi
-
-    echo "📦 snap-packages.txt 로부터 snap 패키지를 설치합니다..."
-    if command -v snap &> /dev/null && [ -f "$UBUNTU_DIR/snap-packages.txt" ]; then
-        while read -r package flag; do
-            if [ -n "$package" ]; then
-                if [ "$flag" == "--classic" ]; then
-                    sudo snap install "$package" --classic
-                else
-                    sudo snap install "$package"
+        echo "📦 apt-packages.txt 로부터 패키지를 설치합니다..."
+        if [ -f "$UBUNTU_DIR/apt-packages.txt" ]; then
+            sudo apt update
+            while read -r package; do
+                if [ -n "$package" ]; then
+                    echo "   -> 설치 시도: $package"
+                    sudo apt install -y "$package" || echo "   ❌ 설치 실패: $package (계속 진행합니다)"
                 fi
-            fi
-        done < "$UBUNTU_DIR/snap-packages.txt"
-    else
-        echo "⚠️ snap이 설치되어 있지 않거나 snap-packages.txt 파일을 찾을 수 없습니다."
+            done < "$UBUNTU_DIR/apt-packages.txt"
+        else
+            echo "⚠️ apt-packages.txt 파일을 찾을 수 없어 패키지 설치를 건너뜁니다."
+        fi
+
+        echo "📦 수동 DEB 패키지를 설치합니다..."
+        if [ -f "$UBUNTU_DIR/install_deb_packages.sh" ]; then
+            "$UBUNTU_DIR/install_deb_packages.sh"
+        fi
+
+        echo "📦 snap-packages.txt 로부터 snap 패키지를 설치합니다..."
+        if command -v snap &> /dev/null && [ -f "$UBUNTU_DIR/snap-packages.txt" ]; then
+            while read -r package flag; do
+                if [ -n "$package" ]; then
+                    if [ "$flag" == "--classic" ]; then
+                        sudo snap install "$package" --classic
+                    else
+                        sudo snap install "$package"
+                    fi
+                fi
+            done < "$UBUNTU_DIR/snap-packages.txt"
+        else
+            echo "⚠️ snap이 설치되어 있지 않거나 snap-packages.txt 파일을 찾을 수 없습니다."
+        fi
+
+        link_file "$UBUNTU_DIR/.xinputrc" "$HOME/.xinputrc"
+
+        # GNOME 및 입력기 단축키 설정 적용
+        if [ -f "$UBUNTU_DIR/set_gnome_settings.sh" ]; then
+            "$UBUNTU_DIR/set_gnome_settings.sh"
+        fi
     fi
 
-    # Ubuntu 전용 설정 파일 링크
+    # Ubuntu 전용 설정 파일 링크 (Zsh 관련)
     link_file "$UBUNTU_DIR/.zshrc_ubuntu" "$HOME/.zshrc_ubuntu"
-    link_file "$UBUNTU_DIR/.xinputrc" "$HOME/.xinputrc"
-
-    # GNOME 및 입력기 단축키 설정 적용
-    if [ -f "$UBUNTU_DIR/set_gnome_settings.sh" ]; then
-        "$UBUNTU_DIR/set_gnome_settings.sh"
-    fi
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "🍎 macOS 환경을 감지했습니다."
     
-    # Homebrew 설치 확인 및 패키지 설치 (Brewfile 활용 가능)
-    if ! command -v brew &> /dev/null; then
-        echo "🍺 Homebrew가 설치되어 있지 않습니다. Homebrew를 먼저 설치해주세요."
-    else
-        echo "📦 Homebrew를 통해 패키지를 설치할 수 있습니다. (추후 추가 예정)"
+    if [ "$ZSH_ONLY" = false ]; then
+        # Homebrew 설치 확인 및 패키지 설치 (Brewfile 활용 가능)
+        if ! command -v brew &> /dev/null; then
+            echo "🍺 Homebrew가 설치되어 있지 않습니다. Homebrew를 먼저 설치해주세요."
+        else
+            echo "📦 Homebrew를 통해 패키지를 설치할 수 있습니다. (추후 추가 예정)"
+        fi
     fi
 
-    # macOS 전용 설정 파일 링크
+    # macOS 전용 설정 파일 링크 (Zsh 관련)
     link_file "$MACOS_DIR/.zshrc_macos" "$HOME/.zshrc_macos"
 else
     echo "❓ 지원하지 않는 OS입니다: $OSTYPE"
@@ -106,31 +128,34 @@ fi
 # 2. 공통 심볼릭 링크 생성
 echo "🔗 공통 설정 파일들의 심볼릭 링크를 생성합니다..."
 link_file "$COMMON_DIR/.zshrc_common" "$HOME/.zshrc"
-link_file "$COMMON_DIR/.bashrc" "$HOME/.bashrc"
 link_file "$COMMON_DIR/.p10k.zsh" "$HOME/.p10k.zsh"
-link_file "$COMMON_DIR/.gitconfig" "$HOME/.gitconfig"
 
-# kitty 설정 링크 (디렉토리 내부의 모든 파일을 링크하여 테마 등도 지원)
-mkdir -p "$HOME/.config/kitty"
-if [ -d "$COMMON_DIR/kitty" ]; then
-    for f in "$COMMON_DIR/kitty"/*; do
-        if [ -f "$f" ]; then
-            link_file "$f" "$HOME/.config/kitty/$(basename "$f")"
-        fi
-    done
-fi
+if [ "$ZSH_ONLY" = false ]; then
+    link_file "$COMMON_DIR/.bashrc" "$HOME/.bashrc"
+    link_file "$COMMON_DIR/.gitconfig" "$HOME/.gitconfig"
 
-# 3. 폰트 설치
-echo "🔤 사용자 폰트를 설치합니다..."
-mkdir -p "$HOME/.local/share/fonts"
-if [ -d "$COMMON_DIR/fonts" ] && [ "$(ls -A "$COMMON_DIR/fonts")" ]; then
-    cp -r "$COMMON_DIR/fonts/"* "$HOME/.local/share/fonts/"
-    if command -v fc-cache &> /dev/null; then
-        echo "   -> 폰트 캐시를 갱신합니다..."
-        fc-cache -f -v > /dev/null
+    # kitty 설정 링크 (디렉토리 내부의 모든 파일을 링크하여 테마 등도 지원)
+    mkdir -p "$HOME/.config/kitty"
+    if [ -d "$COMMON_DIR/kitty" ]; then
+        for f in "$COMMON_DIR/kitty"/*; do
+            if [ -f "$f" ]; then
+                link_file "$f" "$HOME/.config/kitty/$(basename "$f")"
+            fi
+        done
     fi
-else
-    echo "   -> 백업된 폰트가 없습니다."
+
+    # 3. 폰트 설치
+    echo "🔤 사용자 폰트를 설치합니다..."
+    mkdir -p "$HOME/.local/share/fonts"
+    if [ -d "$COMMON_DIR/fonts" ] && [ "$(ls -A "$COMMON_DIR/fonts")" ]; then
+        cp -r "$COMMON_DIR/fonts/"* "$HOME/.local/share/fonts/"
+        if command -v fc-cache &> /dev/null; then
+            echo "   -> 폰트 캐시를 갱신합니다..."
+            fc-cache -f -v > /dev/null
+        fi
+    else
+        echo "   -> 백업된 폰트가 없습니다."
+    fi
 fi
 
 # zsh를 기본 셸로 설정 (선택적)
