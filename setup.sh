@@ -48,7 +48,12 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "📦 apt-packages.txt 로부터 패키지를 설치합니다..."
     if [ -f "$UBUNTU_DIR/apt-packages.txt" ]; then
         sudo apt update
-        xargs -a "$UBUNTU_DIR/apt-packages.txt" sudo apt install -y
+        while read -r package; do
+            if [ -n "$package" ]; then
+                echo "   -> 설치 시도: $package"
+                sudo apt install -y "$package" || echo "   ❌ 설치 실패: $package (계속 진행합니다)"
+            fi
+        done < "$UBUNTU_DIR/apt-packages.txt"
     else
         echo "⚠️ apt-packages.txt 파일을 찾을 수 없어 패키지 설치를 건너뜁니다."
     fi

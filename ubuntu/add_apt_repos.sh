@@ -19,7 +19,7 @@ if [ ! -f /etc/apt/keyrings/docker.asc ]; then
 fi
 
 # 2. VS Code
-if [ ! -f /etc/apt/keyrings/packages.microsoft.gpg ]; then
+if [ ! -f /etc/apt/keyrings/packages.microsoft.gpg ] && [ ! -f /usr/share/keyrings/microsoft.gpg ] && [ ! -f /etc/apt/sources.list.d/vscode.sources ]; then
     echo "  -> VS Code 저장소 추가"
     wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
     sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
