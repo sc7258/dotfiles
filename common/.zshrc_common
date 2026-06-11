@@ -177,3 +177,4 @@ export KUBECONFIG=$HOME/.kube/config
 # Created by `pipx` on 2026-05-06 02:57:00
 typeset -U path PATH
 path=("$HOME/.local/bin" $path)
+export IBUS_ENABLE_SYNC_MODE=1

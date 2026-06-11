@@ -35,7 +35,6 @@ gnome-shell-extension-manager
 gnome-user-docs-ko
 gnupg
 google-chrome-stable
-google-chrome-stable
 google-cloud-cli
 gpg
 grep
@@ -67,7 +66,7 @@ language-pack-ko
 libchewing3
 libchewing3-data
 libfuse2t64
-libgnutls30t64:i386
+libgnutls30t64
 libm17n-0
 libmarisa0
 libopencc1.1
